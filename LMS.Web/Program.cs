@@ -11,8 +11,8 @@ using System;
 
 namespace LMS.Web
 {
-    public class Program 
-    {
+    public class Program
+    { //okokkk
 
         public static void Main(string[] args)
         {
