@@ -12,7 +12,7 @@ using System;
 namespace LMS.Web
 {
     public class Program
-    { //okokkk
+    { //okokkkfff
 
         public static void Main(string[] args)
         {
