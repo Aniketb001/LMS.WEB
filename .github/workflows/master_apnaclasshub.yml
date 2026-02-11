@@ -45,8 +45,9 @@ jobs:
           path: ${{env.DOTNET_ROOT}}/myapp
 
   deploy:
-    # ✅ Deploy ONLY when code is pushed to master (not PR)
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    # ✅ Deploy on push OR manual trigger
+    # ❌ Do NOT deploy on pull request
+    if: github.event_name != 'pull_request'
     runs-on: windows-latest
     needs: build
     permissions:
