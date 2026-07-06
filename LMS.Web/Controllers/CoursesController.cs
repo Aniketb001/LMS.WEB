@@ -1,4 +1,4 @@
-﻿using LMS.Repository.Models;
+using LMS.Repository.Models;
 using LMS.Services.DTO;
 using LMS.Services.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -40,6 +40,8 @@ namespace LMS.Web.Controllers
         {
             if (!ModelState.IsValid)
             {
+                var instructors = await _courseService.GetInstructorsAsync();
+                ViewBag.Instructors = new SelectList(instructors, "UserId", "FullName");
                 return View(course);
             }
 
@@ -47,13 +49,15 @@ namespace LMS.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ✅ Student only
+        // Student only
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> Available()
         {
             var courses = await _courseService.GetApprovedCoursesAsync();
             return View(courses);
         }
+
+        // GET: Edit
         [HttpGet]
         [Authorize(Roles = "Admin,Instructor")]
         public async Task<IActionResult> Edit(int courseId)
@@ -61,8 +65,7 @@ namespace LMS.Web.Controllers
             int userId = int.Parse(User.FindFirst("UserId")!.Value);
             string role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)!.Value;
 
-            var course = await _courseService
-                .GetCourseDetailAsync(courseId, userId, role);
+            var course = await _courseService.GetCourseDetailAsync(courseId, userId, role);
 
             if (course == null)
                 return NotFound();
@@ -74,6 +77,8 @@ namespace LMS.Web.Controllers
                 Description = course.Description
             });
         }
+
+        // POST: Edit
         [HttpPost]
         [Authorize(Roles = "Admin,Instructor")]
         [ValidateAntiForgeryToken]
@@ -89,46 +94,7 @@ namespace LMS.Web.Controllers
 
                 await _courseService.UpdateCourseAsync(model, userId, role);
 
-                return RedirectToAction("Index");
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Forbid();
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", ex.Message);
-                return View(model);
-            }
-        }
-
-
-            if (course == null)
-                return NotFound();
-
-            return View(new UpdateCourseDTO
-            {
-                CourseId = course.CourseId,
-                CourseTitle = course.CourseTitle,
-                Description = course.Description
-            });
-        }
-        [HttpPost]
-        [Authorize(Roles = "Admin,Instructor")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(UpdateCourseDTO model)
-        {
-            if (!ModelState.IsValid)
-                return View(model);
-
-            try
-            {
-                int userId = int.Parse(User.FindFirst("UserId")!.Value);
-                string role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)!.Value;
-
-                await _courseService.UpdateCourseAsync(model, userId, role);
-
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
             catch (UnauthorizedAccessException)
             {
